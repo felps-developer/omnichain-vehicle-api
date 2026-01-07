@@ -32,6 +32,6 @@ public class VehicleRequest {
     private String cor;
     
     @NotNull(message = "Customer ID is required")
-    private Long clienteId;
+    private UUID clienteId;
 }
 

@@ -13,6 +13,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.Where;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "veiculos")
@@ -25,8 +26,9 @@ import java.time.LocalDateTime;
 public class Vehicle {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", updatable = false, nullable = false, columnDefinition = "VARCHAR(36)")
+    private UUID id;
     
     @NotBlank(message = "License plate is required")
     @Pattern(regexp = "[A-Z]{3}[0-9][A-Z0-9][0-9]{2}", 

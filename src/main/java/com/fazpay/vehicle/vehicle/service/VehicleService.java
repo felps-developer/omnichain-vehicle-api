@@ -52,7 +52,7 @@ public class VehicleService {
     
     @Transactional(readOnly = true)
     @Cacheable(value = "vehicles", key = "#id")
-    public VehicleResponse findById(Long id) {
+    public VehicleResponse findById(UUID id) {
         log.debug("Finding vehicle by id: {}", id);
         Vehicle vehicle = vehicleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Vehicle", "id", id));
@@ -96,7 +96,7 @@ public class VehicleService {
     
     @Transactional
     @CacheEvict(value = "vehicles", allEntries = true)
-    public VehicleResponse update(Long id, VehicleRequest request) {
+    public VehicleResponse update(UUID id, VehicleRequest request) {
         log.info("Updating vehicle with id: {}", id);
         
         Vehicle vehicle = vehicleRepository.findById(id)
@@ -125,7 +125,7 @@ public class VehicleService {
     
     @Transactional
     @CacheEvict(value = "vehicles", allEntries = true)
-    public void delete(Long id) {
+    public void delete(UUID id) {
         log.info("Deleting vehicle with id: {}", id);
         
         Vehicle vehicle = vehicleRepository.findById(id)

@@ -4,7 +4,7 @@ USE vehicle_api_db;
 
 -- Customers Table (with audit and soft delete)
 CREATE TABLE clientes (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id VARCHAR(36) PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
     cpf VARCHAR(14) NOT NULL UNIQUE,
     email VARCHAR(100) NOT NULL UNIQUE,
@@ -16,25 +16,26 @@ CREATE TABLE clientes (
     INDEX idx_email (email)
 );
 
--- Users Table (for authentication with relationship to customer)
+-- Users Table (for authentication - no relationship with customers)
 CREATE TABLE usuarios (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id VARCHAR(36) PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
-    cliente_id BIGINT UNIQUE,
-    FOREIGN KEY (cliente_id) REFERENCES clientes(id),
-    INDEX idx_username (username)
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_username (username),
+    INDEX idx_email (email)
 );
 
 -- Vehicles Table (with audit and soft delete)
 CREATE TABLE veiculos (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id VARCHAR(36) PRIMARY KEY,
     placa VARCHAR(7) NOT NULL UNIQUE,
     marca VARCHAR(50) NOT NULL,
     modelo VARCHAR(50) NOT NULL,
     ano INT NOT NULL,
     cor VARCHAR(30) NOT NULL,
-    cliente_id BIGINT NOT NULL,
+    cliente_id VARCHAR(36) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL,
@@ -45,24 +46,27 @@ CREATE TABLE veiculos (
 
 -- Sample Data for Testing
 
--- Insert sample customers
-INSERT INTO clientes (nome, cpf, email, telefone) VALUES
-('João Silva', '12345678901', 'joao.silva@example.com', '(11) 98765-4321'),
-('Maria Santos', '98765432109', 'maria.santos@example.com', '(21) 97654-3210'),
-('Pedro Oliveira', '45678912301', 'pedro.oliveira@example.com', '(31) 96543-2109');
+-- Insert sample customers (with UUID)
+INSERT INTO clientes (id, nome, cpf, email, telefone) VALUES
+(UUID(), 'João Silva', '12345678901', 'joao.silva@example.com', '(11) 98765-4321'),
+(UUID(), 'Maria Santos', '98765432109', 'maria.santos@example.com', '(21) 97654-3210'),
+(UUID(), 'Pedro Oliveira', '45678912301', 'pedro.oliveira@example.com', '(31) 96543-2109');
 
 -- Insert sample users (password: 'password123' encrypted with BCrypt)
--- Note: You should generate these passwords using BCryptPasswordEncoder
--- Example: new BCryptPasswordEncoder().encode("password123")
-INSERT INTO usuarios (username, password, cliente_id) VALUES
-('joao', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 1),
-('maria', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 2),
-('pedro', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 3);
+-- Note: Password hash generated with BCryptPasswordEncoder
+-- BCrypt: $2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy = "password123"
+INSERT INTO usuarios (id, username, email, password) VALUES
+(UUID(), 'admin', 'admin@fazpay.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy'),
+(UUID(), 'user1', 'user1@example.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy'),
+(UUID(), 'user2', 'user2@example.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy');
 
--- Insert sample vehicles
-INSERT INTO veiculos (placa, marca, modelo, ano, cor, cliente_id) VALUES
-('ABC1234', 'Toyota', 'Corolla', 2022, 'Prata', 1),
-('XYZ5678', 'Honda', 'Civic', 2021, 'Preto', 1),
-('DEF9012', 'Volkswagen', 'Gol', 2023, 'Branco', 2),
-('GHI3456', 'Chevrolet', 'Onix', 2020, 'Vermelho', 3);
+-- Insert sample vehicles (requires getting cliente IDs first)
+INSERT INTO veiculos (id, placa, marca, modelo, ano, cor, cliente_id)
+SELECT UUID(), 'ABC1234', 'Toyota', 'Corolla', 2022, 'Prata', id FROM clientes WHERE cpf = '12345678901'
+UNION ALL
+SELECT UUID(), 'XYZ5678', 'Honda', 'Civic', 2021, 'Preto', id FROM clientes WHERE cpf = '12345678901'
+UNION ALL
+SELECT UUID(), 'DEF9012', 'Volkswagen', 'Gol', 2023, 'Branco', id FROM clientes WHERE cpf = '98765432109'
+UNION ALL
+SELECT UUID(), 'GHI3456', 'Chevrolet', 'Onix', 2020, 'Vermelho', id FROM clientes WHERE cpf = '45678912301';
 

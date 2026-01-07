@@ -50,7 +50,7 @@ public class CustomerController {
     
     @GetMapping("/{id}")
     @Operation(summary = "Get customer by ID")
-    public ResponseEntity<CustomerResponse> findById(@PathVariable Long id) {
+    public ResponseEntity<CustomerResponse> findById(@PathVariable UUID id) {
         log.debug("GET /api/v1/clientes/{}", id);
         CustomerResponse customer = customerService.findById(id);
         return ResponseEntity.ok(customer);
@@ -66,7 +66,7 @@ public class CustomerController {
     
     @PutMapping("/{id}")
     @Operation(summary = "Update customer")
-    public ResponseEntity<CustomerResponse> update(@PathVariable Long id, 
+    public ResponseEntity<CustomerResponse> update(@PathVariable UUID id, 
                                                    @Valid @RequestBody CustomerRequest request) {
         log.info("PUT /api/v1/clientes/{}", id);
         CustomerResponse customer = customerService.update(id, request);
@@ -75,7 +75,7 @@ public class CustomerController {
     
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete customer (soft delete)")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         log.info("DELETE /api/v1/clientes/{}", id);
         customerService.delete(id);
         return ResponseEntity.noContent().build();

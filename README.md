@@ -118,14 +118,15 @@ http://localhost:8080/v3/api-docs
 
 ## 🔐 Authentication
 
-### 1. Login
+### 1. Register (Optional)
 
-**POST** `/api/v1/auth/login`
+**POST** `/api/v1/auth/register`
 
 Request body:
 ```json
 {
-  "username": "joao",
+  "username": "newuser",
+  "email": "newuser@example.com",
   "password": "password123"
 }
 ```
@@ -135,17 +136,54 @@ Response:
 {
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "type": "Bearer",
-  "username": "joao"
+  "username": "newuser"
 }
 ```
 
-### 2. Use the token
+### 2. Login
+
+**POST** `/api/v1/auth/login`
+
+Request body:
+```json
+{
+  "username": "admin",
+  "password": "password123"
+}
+```
+
+Response:
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "type": "Bearer",
+  "username": "admin"
+}
+```
+
+### 3. Use the token
 
 Add the token to the `Authorization` header for protected endpoints:
 
 ```
 Authorization: Bearer <your-token>
 ```
+
+### 🔑 Test Users
+
+The database comes pre-seeded with test users. **Any authenticated user can create, edit, and view customers and vehicles.**
+
+| Username | Email | Password |
+|----------|-------|----------|
+| `admin` | admin@fazpay.com | `password123` |
+| `user1` | user1@example.com | `password123` |
+| `user2` | user2@example.com | `password123` |
+
+**Note**: 
+- All passwords are: `password123`
+- There is **no relationship** between users and customers/vehicles
+- Authentication is only for access control (prevent unauthenticated access)
+- Any logged-in user has full access to all customers and vehicles
 
 ## 🛣️ API Endpoints
 
@@ -154,7 +192,8 @@ Authorization: Bearer <your-token>
 | Method | Endpoint | Description | Protected |
 |--------|----------|-------------|-----------|
 | POST | `/api/v1/auth/login` | Authenticate user | ❌ |
-| GET | `/api/v1/auth/me` | Get current user | ✅ |
+| POST | `/api/v1/auth/register` | Register new user | ❌ |
+| GET | `/api/v1/auth/me` | Get current user info | ✅ |
 
 ### Customers
 
@@ -326,9 +365,32 @@ See `sql/ddl.sql` for the complete database schema.
 
 ### Main Tables
 
-- **clientes**: Customer information with soft delete
-- **usuarios**: User credentials for authentication
+- **usuarios**: User credentials for authentication (with email validation)
+- **clientes**: Customer information with soft delete  
 - **veiculos**: Vehicle information with soft delete
+
+### Usuario Table Structure
+
+```sql
+CREATE TABLE usuarios (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+**Purpose:**
+- ✅ Authentication and access control only
+- ✅ No relationship with customers or vehicles
+- ✅ Any authenticated user can manage all data
+
+**Validations:**
+- ✅ Username must be unique
+- ✅ Email must be unique and valid format
+- ✅ Password encrypted with BCrypt
+- ✅ Email validation on registration
 
 ## 🤝 Contributing
 

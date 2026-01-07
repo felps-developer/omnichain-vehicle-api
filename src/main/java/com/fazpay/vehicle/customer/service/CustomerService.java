@@ -47,7 +47,7 @@ public class CustomerService {
     }
     
     @Transactional(readOnly = true)
-    public CustomerResponse findById(Long id) {
+    public CustomerResponse findById(UUID id) {
         log.debug("Finding customer by id: {}", id);
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer", "id", id));
@@ -80,7 +80,7 @@ public class CustomerService {
     }
     
     @Transactional
-    public CustomerResponse update(Long id, CustomerRequest request) {
+    public CustomerResponse update(UUID id, CustomerRequest request) {
         log.info("Updating customer with id: {}", id);
         
         Customer customer = customerRepository.findById(id)
@@ -108,7 +108,7 @@ public class CustomerService {
     }
     
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         log.info("Deleting customer with id: {}", id);
         
         Customer customer = customerRepository.findById(id)

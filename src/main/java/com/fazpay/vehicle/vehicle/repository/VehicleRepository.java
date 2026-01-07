@@ -11,13 +11,14 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface VehicleRepository extends JpaRepository<Vehicle, Long>, JpaSpecificationExecutor<Vehicle> {
+public interface VehicleRepository extends JpaRepository<Vehicle, UUID>, JpaSpecificationExecutor<Vehicle> {
     
     Optional<Vehicle> findByPlaca(String placa);
     
-    List<Vehicle> findByCustomerId(Long customerId);
+    List<Vehicle> findByCustomerId(UUID customerId);
     
     boolean existsByPlaca(String placa);
     

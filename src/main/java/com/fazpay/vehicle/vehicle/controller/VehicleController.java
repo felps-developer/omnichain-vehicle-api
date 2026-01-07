@@ -49,7 +49,7 @@ public class VehicleController {
     
     @GetMapping("/{id}")
     @Operation(summary = "Get vehicle by ID")
-    public ResponseEntity<VehicleResponse> findById(@PathVariable Long id) {
+    public ResponseEntity<VehicleResponse> findById(@PathVariable UUID id) {
         log.debug("GET /api/v1/veiculos/{}", id);
         VehicleResponse vehicle = vehicleService.findById(id);
         return ResponseEntity.ok(vehicle);
@@ -73,7 +73,7 @@ public class VehicleController {
     
     @PutMapping("/{id}")
     @Operation(summary = "Update vehicle")
-    public ResponseEntity<VehicleResponse> update(@PathVariable Long id,
+    public ResponseEntity<VehicleResponse> update(@PathVariable UUID id,
                                                   @Valid @RequestBody VehicleRequest request) {
         log.info("PUT /api/v1/veiculos/{}", id);
         VehicleResponse vehicle = vehicleService.update(id, request);
@@ -82,7 +82,7 @@ public class VehicleController {
     
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete vehicle (soft delete)")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         log.info("DELETE /api/v1/veiculos/{}", id);
         vehicleService.delete(id);
         return ResponseEntity.noContent().build();

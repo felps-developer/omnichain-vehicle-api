@@ -14,6 +14,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.Where;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "clientes")
@@ -26,8 +27,9 @@ import java.time.LocalDateTime;
 public class Customer {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", updatable = false, nullable = false, columnDefinition = "VARCHAR(36)")
+    private UUID id;
     
     @NotBlank(message = "Name is required")
     @Size(min = 3, max = 100, message = "Name must be between 3 and 100 characters")
