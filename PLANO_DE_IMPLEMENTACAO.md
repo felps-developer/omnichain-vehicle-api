@@ -173,47 +173,115 @@ CREATE TABLE veiculos (
 | `DELETE`| `/api/v1/clientes/{id}` | Sim       | **Exclui logicamente** um cliente (Soft Delete).                                        |
 
 #### Módulo de Veículos
+
 | Método | Endpoint                | Protegido | Descrição                                                                               |
+
 |--------|-------------------------|-----------|-----------------------------------------------------------------------------------------|
-| `GET`  | `/api/v1/veiculos`      | Sim       | Lista veículos não excluídos (paginado).                                                |
+
+| `GET`  | `/api/v1/veiculos`      | Sim       | Lista veículos com paginação. Suporta filtros por `marca`, `modelo` e `cor`.              |
+
+| `GET`  | `/api/v1/veiculos/all`  | Sim       | Lista **todos** os veículos não excluídos, sem paginação.                                 |
+
+| `GET`  | `/api/v1/veiculos/{id}` | Sim       | Busca um veículo não excluído por seu ID.                                               |
+
+| `POST` | `/api/v1/veiculos`      | Sim       | Cria um novo veículo, associando-o a um cliente existente.                              |
+
+| `PUT`  | `/api/v1/veiculos/{id}` | Sim       | Atualiza os dados de um veículo.                                                        |
+
 | `DELETE`| `/api/v1/veiculos/{id}` | Sim       | **Exclui logicamente** um veículo (Soft Delete).                                        |
+
+
+
 
 
 ## 4. Plano de Desenvolvimento (Sprints)
 
+
+
 ### Sprint 0: Configuração do Ambiente
+
 - **Objetivo**: Estruturar o projeto e o ambiente Docker.
+
 1.  Inicializar projeto Spring Boot e configurar `pom.xml`.
+
 2.  Criar a estrutura de diretórios dos módulos.
+
 3.  Adicionar `Dockerfile` e `docker-compose.yml` e validar a comunicação API-Banco.
+
 4.  Configurar o repositório Git.
 
+
+
 ### Sprint 1: Módulo de Autenticação e Segurança
+
 - **Objetivo**: Implementar o fluxo de autenticação e o endpoint `/me`.
+
 1.  Implementar as entidades `Usuario` e `Cliente` com a relação entre elas.
+
 2.  Implementar `UserDetailsServiceImpl` no módulo `core.security`.
+
 3.  Configurar `SecurityConfig` para proteger os endpoints.
+
 4.  Implementar o `AuthController` com os endpoints `/login` e `/me`.
+
 5.  Adicionar **logging** para o processo de login.
 
+
+
 ### Sprint 2: Módulo de Clientes com Filtros
+
 - **Objetivo**: Entregar o CRUD de `Cliente` com as novas opções de listagem.
+
 1.  Implementar a entidade `Cliente` com auditoria e **soft delete**.
+
 2.  Implementar o `ClienteRepository` usando Specifications ou Querydsl para os filtros dinâmicos.
+
 3.  Implementar o `ClienteService` e o `ClienteController` com os 3 endpoints de listagem (`/clientes`, `/clientes/all`, `/clientes/{id}`).
+
 4.  Garantir o **controle transacional** (`@Transactional`).
+
 5.  Criar testes unitários e de integração para os filtros e a lógica de soft delete.
 
+
+
 ### Sprint 3: Módulo de Veículos e Cache
-- **Objetivo**: Entregar o CRUD para `Veiculo` e implementar caching.
-1.  Implementar a entidade `Veiculo` com auditoria e **soft delete**.
-2.  Implementar o CRUD completo para veículos.
-3.  Habilitar o cache do Spring e aplicar **caching** (`@Cacheable`) em métodos de consulta.
+
+- **Objetivo**: Entregar o CRUD de `Veiculo` com filtros e implementar caching.
+
+1.  Implementar a entidade `Veiculo` com auditoria e **soft delete**, e a relação com `Cliente`.
+
+2.  Implementar o `VeiculoRepository` utilizando Specifications ou Querydsl para filtros dinâmicos (por `marca`, `modelo`, `cor`).
+
+3.  Implementar o `VeiculoService` e o `VeiculoController` com todos os endpoints definidos.
+
+4.  Garantir o **controle transacional** em todas as operações de escrita do serviço.
+
+5.  Habilitar o cache do Spring (`@EnableCaching`) e aplicar **caching** (`@Cacheable`) em métodos de consulta de baixa volatilidade (ex: `GET /veiculos/{id}`).
+
+6.  Criar testes unitários e de integração para os filtros, a lógica de soft delete e o CRUD de veículos.
+
+
 
 ### Sprint 4: Finalização e Documentação
-- **Objetivo**: Polir a aplicação e preparar a documentação para entrega.
-1.  Configurar **Swagger/OpenAPI** para documentação da API.
-2.  Escrever o `README.md` detalhado.
-3.  Incluir o script DDL final no repositório.
-4.  Revisar todos os logs.
-5.  Realizar uma rodada final de testes.
+
+- **Objetivo**: Polir a aplicação, documentar e preparar para entrega.
+
+1.  Configurar e integrar **Swagger/OpenAPI** para documentar todos os endpoints da API, incluindo DTOs e respostas de erro.
+
+2.  Escrever o `README.md` com instruções detalhadas sobre:
+
+    - Pré-requisitos (Java, Maven, Docker).
+
+    - Como configurar e executar a aplicação (localmente e com Docker).
+
+    - Como executar os testes.
+
+    - Exemplos de uso da API (cURL ou Postman).
+
+3.  Incluir o script DDL final e limpo na raiz do repositório ou em uma pasta `sql/`.
+
+4.  Revisar todos os níveis de **logging** para garantir que são informativos e não expõem dados sensíveis.
+
+5.  Validar o funcionamento do **caching** e do **soft delete** em toda a aplicação.
+
+6.  Realizar uma rodada final de testes de ponta a ponta (end-to-end) para todos os fluxos da API.
