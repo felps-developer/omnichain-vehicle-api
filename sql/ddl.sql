@@ -52,13 +52,11 @@ INSERT INTO clientes (id, nome, cpf, email, telefone) VALUES
 (UUID(), 'Maria Santos', '98765432109', 'maria.santos@example.com', '(21) 97654-3210'),
 (UUID(), 'Pedro Oliveira', '45678912301', 'pedro.oliveira@example.com', '(31) 96543-2109');
 
--- Insert sample users (password: 'password123' encrypted with BCrypt)
--- Note: Password hash generated with BCryptPasswordEncoder
--- BCrypt: $2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy = "password123"
+-- Insert sample user
+-- Password: 'senha123' (BCrypt hash with 10 rounds)
+-- Hash: $2a$10$DXRKt4diF/lelVPndfbyUeXu2u.So7KOObqPKFowuopH7IMiW3Btm
 INSERT INTO usuarios (id, username, email, password) VALUES
-(UUID(), 'admin', 'admin@fazpay.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy'),
-(UUID(), 'user1', 'user1@example.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy'),
-(UUID(), 'user2', 'user2@example.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy');
+(UUID(), 'admin', 'admin@fazpay.com', '$2a$10$DXRKt4diF/lelVPndfbyUeXu2u.So7KOObqPKFowuopH7IMiW3Btm');
 
 -- Insert sample vehicles (requires getting cliente IDs first)
 INSERT INTO veiculos (id, placa, marca, modelo, ano, cor, cliente_id)

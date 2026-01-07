@@ -1,420 +1,344 @@
-# Omnichain Vehicle API
+# 🚗 API de Gestão de Veículos e Clientes
 
-REST API for vehicle and customer management with JWT authentication.
+API RESTful para gerenciamento de veículos e clientes com autenticação JWT.
 
-## 📋 Table of Contents
+## 📋 Índice
 
-- [Features](#features)
-- [Technologies](#technologies)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Running the Application](#running-the-application)
-- [API Documentation](#api-documentation)
-- [API Endpoints](#api-endpoints)
-- [Testing](#testing)
-- [Project Structure](#project-structure)
+- [Sobre o Projeto](#sobre-o-projeto)
+- [Arquitetura](#arquitetura)
+- [Tecnologias](#tecnologias)
+- [Pré-requisitos](#pré-requisitos)
+- [Como Executar](#como-executar)
+- [Endpoints da API](#endpoints-da-api)
+- [Estrutura do Projeto](#estrutura-do-projeto)
 
-## ✨ Features
+## 🎯 Sobre o Projeto
 
-- ✅ Customer CRUD operations
-- ✅ Vehicle CRUD operations
-- ✅ JWT Authentication
-- ✅ Soft Delete for customers and vehicles
-- ✅ Audit fields (created_at, updated_at)
-- ✅ Data validation
-- ✅ Pagination and filters
-- ✅ Cache (Caffeine)
-- ✅ Global exception handling
-- ✅ Swagger/OpenAPI documentation
-- ✅ Docker support
+Sistema de gerenciamento de clientes e veículos com autenticação JWT, desenvolvido com Java 17 e Spring Boot 3.
 
-## 🚀 Technologies
+### Funcionalidades
+
+- ✅ CRUD completo de clientes
+- ✅ CRUD completo de veículos
+- ✅ Autenticação JWT
+- ✅ Soft delete (exclusão lógica)
+- ✅ Auditoria automática (created_at, updated_at)
+- ✅ Validação de dados
+- ✅ Paginação e filtros
+- ✅ Cache com Caffeine
+- ✅ Documentação Swagger/OpenAPI
+- ✅ Tratamento global de exceções
+
+## 🏗️ Arquitetura
+
+### Decisões Arquiteturais
+
+**Arquitetura Modular (Package by Feature)**
+
+A aplicação foi organizada em módulos funcionais ao invés da tradicional separação por camadas (controller, service, repository). Esta abordagem traz:
+
+- **Alta Coesão**: Cada módulo agrupa tudo relacionado a uma funcionalidade
+- **Baixo Acoplamento**: Módulos independentes e fáceis de manter
+- **Escalabilidade**: Facilita adicionar novos módulos sem afetar os existentes
+- **Manutenibilidade**: Alterações ficam isoladas em cada módulo
+
+### Módulos da Aplicação
+
+```
+src/main/java/com/fazpay/vehicle/
+│
+├── core/                   # Módulo central (configurações compartilhadas)
+│   ├── config/            # SecurityConfig, OpenApiConfig, CacheConfig
+│   ├── security/          # JwtTokenProvider, JwtAuthenticationFilter
+│   └── exception/         # GlobalExceptionHandler, exceções customizadas
+│
+├── user/                   # Módulo de usuários
+│   ├── model/             # User (entidade)
+│   └── repository/        # UserRepository
+│
+├── auth/                   # Módulo de autenticação
+│   ├── controller/        # AuthController (login, register, /me)
+│   ├── service/           # AuthService (lógica de autenticação)
+│   └── dto/               # LoginRequest, LoginResponse, UserInfoResponse
+│
+├── customer/              # Módulo de clientes
+│   ├── controller/        # CustomerController (endpoints REST)
+│   ├── service/           # CustomerService (regras de negócio)
+│   ├── repository/        # CustomerRepository (acesso ao banco)
+│   ├── model/             # Customer (entidade JPA)
+│   └── dto/               # CustomerRequest, CustomerResponse
+│
+└── vehicle/               # Módulo de veículos
+    ├── controller/        # VehicleController (endpoints REST)
+    ├── service/           # VehicleService (regras de negócio)
+    ├── repository/        # VehicleRepository (acesso ao banco)
+    ├── model/             # Vehicle (entidade JPA)
+    └── dto/               # VehicleRequest, VehicleResponse
+```
+
+### Padrões Utilizados
+
+- **DTO Pattern**: Separação entre entidades e objetos de transferência
+- **Repository Pattern**: Abstração do acesso a dados
+- **Service Layer**: Lógica de negócio isolada
+- **Exception Handler**: Tratamento centralizado de erros
+- **Soft Delete**: Exclusão lógica com flag deleted_at
+
+## 🚀 Tecnologias
 
 - **Java 17**
 - **Spring Boot 3.2.0**
-- **Spring Security** with JWT
+- **Spring Security** + JWT
 - **Spring Data JPA** / Hibernate
 - **MySQL 8.0**
 - **Lombok**
 - **Swagger/OpenAPI 3**
 - **Caffeine Cache**
 - **Maven**
-- **Docker & Docker Compose**
+- **Docker** (apenas banco de dados)
 
-## 📦 Prerequisites
+## 📦 Pré-requisitos
 
-Before you begin, ensure you have the following installed:
-
-- **Java 17** or higher
+- **Java 17** ou superior
 - **Maven 3.6+**
-- **MySQL 8.0** (or use Docker)
-- **Docker & Docker Compose** (optional, recommended)
+- **Docker** (para o banco de dados)
 
-## 💻 Installation
+## 🚀 Como Executar
 
-### 1. Clone the repository
+### 1. Clonar o repositório
 
 ```bash
-git clone https://github.com/your-username/omnichain-vehicle-api.git
+git clone <seu-repositorio>
 cd omnichain-vehicle-api
 ```
 
-### 2. Configure the database
-
-If running MySQL locally, create the database:
-
-```sql
-CREATE DATABASE vehicle_api_db;
-```
-
-Update `src/main/resources/application.properties` with your database credentials if needed.
-
-### 3. Build the project
+### 2. Subir o banco de dados (Docker)
 
 ```bash
-mvn clean install
+docker-compose up -d mysql-vehicle-db
 ```
 
-## 🏃 Running the Application
+Isso iniciará apenas o MySQL na porta `3306` com as tabelas e dados de teste já criados.
 
-### Option 1: Run with Docker Compose (Recommended)
+### 3. Compilar o projeto
 
 ```bash
-docker-compose up -d
+mvn clean compile
 ```
 
-This will start:
-- MySQL database on port `3306`
-- API application on port `8080`
-
-### Option 2: Run locally with Maven
-
-Ensure MySQL is running, then:
+### 4. Executar a aplicação
 
 ```bash
 mvn spring-boot:run
 ```
 
-### Option 3: Run the JAR
+A API estará disponível em: `http://localhost:8080`
 
-```bash
-mvn clean package
-java -jar target/omnichain-vehicle-api-0.0.1-SNAPSHOT.jar
-```
+## 📚 Documentação da API
 
-## 📖 API Documentation
+Após iniciar a aplicação, acesse a documentação interativa:
 
-Once the application is running, access the Swagger UI at:
+**Swagger UI:** `http://localhost:8080/swagger-ui.html`
 
-```
-http://localhost:8080/swagger-ui.html
-```
+**OpenAPI JSON:** `http://localhost:8080/v3/api-docs`
 
-OpenAPI JSON specification:
+## 🔐 Autenticação
 
-```
-http://localhost:8080/v3/api-docs
-```
+A API utiliza **JWT (JSON Web Tokens)** para autenticação.
 
-## 🔐 Authentication
-
-### 1. Register (Optional)
-
-**POST** `/api/v1/auth/register`
-
-Request body:
-```json
-{
-  "username": "newuser",
-  "email": "newuser@example.com",
-  "password": "password123"
-}
-```
-
-Response:
-```json
-{
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "type": "Bearer",
-  "username": "newuser"
-}
-```
-
-### 2. Login
+### 1. Fazer Login
 
 **POST** `/api/v1/auth/login`
 
-Request body:
 ```json
 {
   "username": "admin",
-  "password": "password123"
+  "password": "senha123"
 }
 ```
 
-Response:
+**Resposta:**
 ```json
 {
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "type": "Bearer",
-  "username": "admin"
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "tokenType": "Bearer"
 }
 ```
 
-### 3. Use the token
+### 2. Usar o Token
 
-Add the token to the `Authorization` header for protected endpoints:
+Adicione o token no header `Authorization` de todas as requisições protegidas:
 
 ```
-Authorization: Bearer <your-token>
+Authorization: Bearer <seu-token>
 ```
 
-### 🔑 Test Users
+### 👤 Usuário de Teste
 
-The database comes pre-seeded with test users. **Any authenticated user can create, edit, and view customers and vehicles.**
+O banco vem com um usuário pré-cadastrado:
 
-| Username | Email | Password |
-|----------|-------|----------|
-| `admin` | admin@fazpay.com | `password123` |
-| `user1` | user1@example.com | `password123` |
-| `user2` | user2@example.com | `password123` |
+| Username | Email | Senha |
+|----------|-------|-------|
+| `admin` | admin@fazpay.com | `senha123` |
 
-**Note**: 
-- All passwords are: `password123`
-- There is **no relationship** between users and customers/vehicles
-- Authentication is only for access control (prevent unauthenticated access)
-- Any logged-in user has full access to all customers and vehicles
+**Importante:** O usuário autenticado pode criar, editar e visualizar todos os clientes e veículos. A autenticação serve para controlar o acesso à API.
 
-## 🛣️ API Endpoints
+## 🛣️ Endpoints da API
 
-### Authentication
+### Autenticação
 
-| Method | Endpoint | Description | Protected |
-|--------|----------|-------------|-----------|
-| POST | `/api/v1/auth/login` | Authenticate user | ❌ |
-| POST | `/api/v1/auth/register` | Register new user | ❌ |
-| GET | `/api/v1/auth/me` | Get current user info | ✅ |
+| Método | Endpoint | Descrição | Autenticado |
+|--------|----------|-----------|-------------|
+| POST | `/api/v1/auth/login` | Fazer login | ❌ |
+| POST | `/api/v1/auth/register` | Registrar usuário | ❌ |
+| GET | `/api/v1/auth/me` | Ver usuário logado | ✅ |
 
-### Customers
+### Clientes
 
-| Method | Endpoint | Description | Protected |
-|--------|----------|-------------|-----------|
-| GET | `/api/v1/clientes` | List customers (paginated) | ✅ |
-| GET | `/api/v1/clientes/all` | List all customers | ✅ |
-| GET | `/api/v1/clientes/{id}` | Get customer by ID | ✅ |
-| POST | `/api/v1/clientes` | Create customer | ✅ |
-| PUT | `/api/v1/clientes/{id}` | Update customer | ✅ |
-| DELETE | `/api/v1/clientes/{id}` | Delete customer (soft) | ✅ |
+| Método | Endpoint | Descrição | Autenticado |
+|--------|----------|-----------|-------------|
+| GET | `/api/v1/clientes` | Listar (paginado) | ✅ |
+| GET | `/api/v1/clientes/all` | Listar todos | ✅ |
+| GET | `/api/v1/clientes/{id}` | Buscar por UUID | ✅ |
+| POST | `/api/v1/clientes` | Criar cliente | ✅ |
+| PUT | `/api/v1/clientes/{id}` | Atualizar cliente | ✅ |
+| DELETE | `/api/v1/clientes/{id}` | Deletar (soft delete) | ✅ |
 
-### Vehicles
+### Veículos
 
-| Method | Endpoint | Description | Protected |
-|--------|----------|-------------|-----------|
-| GET | `/api/v1/veiculos` | List vehicles (paginated) | ✅ |
-| GET | `/api/v1/veiculos/all` | List all vehicles | ✅ |
-| GET | `/api/v1/veiculos/{id}` | Get vehicle by ID | ✅ |
-| GET | `/api/v1/veiculos/placa/{placa}` | Get vehicle by license plate | ✅ |
-| POST | `/api/v1/veiculos` | Create vehicle | ✅ |
-| PUT | `/api/v1/veiculos/{id}` | Update vehicle | ✅ |
-| DELETE | `/api/v1/veiculos/{id}` | Delete vehicle (soft) | ✅ |
+| Método | Endpoint | Descrição | Autenticado |
+|--------|----------|-----------|-------------|
+| GET | `/api/v1/veiculos` | Listar (paginado) | ✅ |
+| GET | `/api/v1/veiculos/all` | Listar todos | ✅ |
+| GET | `/api/v1/veiculos/{id}` | Buscar por UUID | ✅ |
+| GET | `/api/v1/veiculos/placa/{placa}` | Buscar por placa | ✅ |
+| POST | `/api/v1/veiculos` | Criar veículo | ✅ |
+| PUT | `/api/v1/veiculos/{id}` | Atualizar veículo | ✅ |
+| DELETE | `/api/v1/veiculos/{id}` | Deletar (soft delete) | ✅ |
 
-## 📝 Example Requests
-
-### Create a Customer
-
-```bash
-curl -X POST http://localhost:8080/api/v1/clientes \
-  -H "Authorization: Bearer <your-token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "nome": "Carlos Souza",
-    "cpf": "11122233344",
-    "email": "carlos@example.com",
-    "telefone": "(11) 91234-5678"
-  }'
-```
-
-### Create a Vehicle
-
-```bash
-curl -X POST http://localhost:8080/api/v1/veiculos \
-  -H "Authorization: Bearer <your-token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "placa": "ABC1D23",
-    "marca": "Ford",
-    "modelo": "Fiesta",
-    "ano": 2022,
-    "cor": "Azul",
-    "clienteId": 1
-  }'
-```
-
-### List Vehicles with Filters
-
-```bash
-curl "http://localhost:8080/api/v1/veiculos?marca=Toyota&cor=Prata&page=0&size=10" \
-  -H "Authorization: Bearer <your-token>"
-```
-
-## 🧪 Testing
-
-### Run all tests
-
-```bash
-mvn test
-```
-
-### Run specific test class
-
-```bash
-mvn test -Dtest=CustomerServiceTest
-```
-
-## 📁 Project Structure
+## 📁 Estrutura do Projeto
 
 ```
 omnichain-vehicle-api/
-├── src/
-│   ├── main/
-│   │   ├── java/com/fazpay/vehicle/
-│   │   │   ├── VehicleApiApplication.java
-│   │   │   ├── core/                    # Core configurations
-│   │   │   │   ├── config/
-│   │   │   │   ├── exception/
-│   │   │   │   └── security/
-│   │   │   ├── user/                    # User module
-│   │   │   │   ├── model/
-│   │   │   │   └── repository/
-│   │   │   ├── auth/                    # Authentication module
-│   │   │   │   ├── controller/
-│   │   │   │   ├── service/
-│   │   │   │   └── dto/
-│   │   │   ├── customer/                # Customer module
-│   │   │   │   ├── controller/
-│   │   │   │   ├── service/
-│   │   │   │   ├── repository/
-│   │   │   │   ├── model/
-│   │   │   │   └── dto/
-│   │   │   └── vehicle/                 # Vehicle module
-│   │   │       ├── controller/
-│   │   │       ├── service/
-│   │   │       ├── repository/
-│   │   │       ├── model/
-│   │   │       └── dto/
-│   │   └── resources/
-│   │       └── application.properties
-│   └── test/
+│
+├── src/main/java/com/fazpay/vehicle/
+│   ├── OmnichainVehicleApiApplication.java    # Classe principal
+│   │
+│   ├── core/                                   # Núcleo da aplicação
+│   │   ├── config/                            # Configurações (Security, OpenAPI, Cache)
+│   │   ├── security/                          # JWT Provider e Filters
+│   │   └── exception/                         # Tratamento de exceções
+│   │
+│   ├── user/                                   # Módulo de usuários
+│   │   ├── model/User.java                   # Entidade usuário
+│   │   └── repository/UserRepository.java    # Repositório
+│   │
+│   ├── auth/                                   # Módulo de autenticação
+│   │   ├── controller/AuthController.java    # Endpoints login/register
+│   │   ├── service/AuthService.java          # Lógica de autenticação
+│   │   └── dto/                               # DTOs de requisição/resposta
+│   │
+│   ├── customer/                               # Módulo de clientes
+│   │   ├── controller/                        # REST endpoints
+│   │   ├── service/                           # Regras de negócio
+│   │   ├── repository/                        # Acesso ao banco
+│   │   ├── model/Customer.java               # Entidade cliente
+│   │   └── dto/                               # DTOs
+│   │
+│   └── vehicle/                                # Módulo de veículos
+│       ├── controller/                        # REST endpoints
+│       ├── service/                           # Regras de negócio
+│       ├── repository/                        # Acesso ao banco
+│       ├── model/Vehicle.java                # Entidade veículo
+│       └── dto/                               # DTOs
+│
+├── src/main/resources/
+│   └── application.properties                 # Configurações da aplicação
+│
 ├── sql/
-│   └── ddl.sql                          # Database DDL script
-├── docker-compose.yml
-├── Dockerfile
-├── pom.xml
-└── README.md
+│   └── ddl.sql                                # Schema do banco (UUID)
+│
+├── docker-compose.yml                         # MySQL em Docker
+├── Dockerfile                                 # Build da aplicação (opcional)
+└── pom.xml                                    # Dependências Maven
 ```
 
-## 🔧 Configuration
+## 📊 Banco de Dados
 
-### Database Configuration
+### Tabelas Principais
 
-Edit `application.properties`:
+**usuarios** - Autenticação
+- `id` (UUID)
+- `username` (único)
+- `email` (único, validado)
+- `password` (BCrypt)
 
-```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/vehicle_api_db
-spring.datasource.username=root
-spring.datasource.password=root
-```
+**clientes** - Informações dos clientes
+- `id` (UUID)
+- `nome`, `cpf`, `email`, `telefone`
+- `created_at`, `updated_at`, `deleted_at`
 
-### JWT Configuration
+**veiculos** - Informações dos veículos
+- `id` (UUID)
+- `placa`, `marca`, `modelo`, `ano`, `cor`
+- `cliente_id` (FK → clientes)
+- `created_at`, `updated_at`, `deleted_at`
 
-```properties
-jwt.secret=mySecretKeyForJWTTokenGenerationWithAtLeast256BitsLength12345
-jwt.expiration=86400000
-```
+**Nota:** Todos os IDs utilizam **UUID** para maior segurança e escalabilidade.
 
-### Cache Configuration
+## 🛠️ Tecnologias e Padrões
 
-```properties
-spring.cache.type=caffeine
-spring.cache.caffeine.spec=maximumSize=500,expireAfterWrite=10m
-```
+- **Spring Security + JWT**: Autenticação stateless
+- **Spring Data JPA**: Acesso a dados simplificado
+- **Hibernate**: ORM para mapeamento objeto-relacional
+- **Lombok**: Redução de código boilerplate
+- **Caffeine**: Cache em memória de alta performance
+- **Swagger/OpenAPI**: Documentação automática
+- **Bean Validation**: Validações declarativas
 
-## 🐳 Docker
+## 📝 Exemplos de Uso
 
-### Build Docker image
+### Criar Cliente
 
 ```bash
-docker build -t omnichain-vehicle-api .
+curl -X POST http://localhost:8080/api/v1/clientes \
+  -H "Authorization: Bearer SEU_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nome": "João Silva",
+    "cpf": "12345678901",
+    "email": "joao@example.com",
+    "telefone": "(11) 98765-4321"
+  }'
 ```
 
-### Run with Docker Compose
+### Criar Veículo
 
 ```bash
-docker-compose up -d
+curl -X POST http://localhost:8080/api/v1/veiculos \
+  -H "Authorization: Bearer SEU_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "placa": "ABC1D23",
+    "marca": "Toyota",
+    "modelo": "Corolla",
+    "ano": 2023,
+    "cor": "Prata",
+    "clienteId": "UUID-DO-CLIENTE"
+  }'
 ```
 
-### Stop services
+## 🧪 Testes
 
 ```bash
-docker-compose down
+# Rodar todos os testes
+mvn test
+
+# Rodar teste específico
+mvn test -Dtest=CustomerServiceTest
 ```
-
-## 📊 Database Schema
-
-See `sql/ddl.sql` for the complete database schema.
-
-### Main Tables
-
-- **usuarios**: User credentials for authentication (with email validation)
-- **clientes**: Customer information with soft delete  
-- **veiculos**: Vehicle information with soft delete
-
-### Usuario Table Structure
-
-```sql
-CREATE TABLE usuarios (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) NOT NULL UNIQUE,
-    email VARCHAR(100) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-**Purpose:**
-- ✅ Authentication and access control only
-- ✅ No relationship with customers or vehicles
-- ✅ Any authenticated user can manage all data
-
-**Validations:**
-- ✅ Username must be unique
-- ✅ Email must be unique and valid format
-- ✅ Password encrypted with BCrypt
-- ✅ Email validation on registration
-
-## 🤝 Contributing
-
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the Apache License 2.0.
-
-## 👤 Author
-
-**FazPay Team**
-
-- Email: support@fazpay.com
-
-## 📞 Support
-
-For support, email support@fazpay.com or open an issue in the repository.
 
 ---
 
-Made with ❤️ by FazPay
+
 

@@ -1,16 +1,18 @@
 package com.fazpay.vehicle.vehicle.controller;
 
+import com.fazpay.vehicle.core.dto.PageResponse;
 import com.fazpay.vehicle.vehicle.dto.VehicleRequest;
 import com.fazpay.vehicle.vehicle.dto.VehicleResponse;
 import com.fazpay.vehicle.vehicle.service.VehicleService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,16 +30,50 @@ public class VehicleController {
     private final VehicleService vehicleService;
     
     @GetMapping
-    @Operation(summary = "List vehicles with pagination and filters")
-    public ResponseEntity<Page<VehicleResponse>> findAll(
+    @Operation(
+        summary = "List vehicles with pagination and filters",
+        description = "Returns a paginated list of vehicles. " +
+                      "Optional filters: marca, modelo, cor. " +
+                      "Optional sort: field name (default: placa). Example: ?page=0&size=10&sort=marca"
+    )
+    public ResponseEntity<PageResponse<VehicleResponse>> findAll(
+            @Parameter(description = "Filter by vehicle brand (partial match)")
             @RequestParam(required = false) String marca,
+            
+            @Parameter(description = "Filter by vehicle model (partial match)")
             @RequestParam(required = false) String modelo,
+            
+            @Parameter(description = "Filter by vehicle color (partial match)")
             @RequestParam(required = false) String cor,
-            @PageableDefault(size = 10, sort = "id") Pageable pageable) {
+            
+            @Parameter(description = "Page number (default: 0)")
+            @RequestParam(defaultValue = "0") int page,
+            
+            @Parameter(description = "Page size (default: 10)")
+            @RequestParam(defaultValue = "10") int size,
+            
+            @Parameter(description = "Sort field (optional). Available: placa, marca, modelo, ano, cor, createdAt")
+            @RequestParam(required = false) String sort) {
         
-        log.debug("GET /api/v1/veiculos - page: {}, size: {}", pageable.getPageNumber(), pageable.getPageSize());
-        Page<VehicleResponse> vehicles = vehicleService.findWithFilters(marca, modelo, cor, pageable);
-        return ResponseEntity.ok(vehicles);
+        log.debug("GET /api/v1/veiculos - page: {}, size: {}", page, size);
+        
+        PageRequest pageable = sort != null 
+            ? PageRequest.of(page, size, Sort.by(sort))
+            : PageRequest.of(page, size, Sort.by("placa"));
+        
+        Page<VehicleResponse> pageResult = vehicleService.findWithFilters(marca, modelo, cor, pageable);
+        
+        PageResponse<VehicleResponse> response = new PageResponse<>(
+            pageResult.getContent(),
+            pageResult.getNumber(),
+            pageResult.getSize(),
+            pageResult.getTotalElements(),
+            pageResult.getTotalPages(),
+            pageResult.isFirst(),
+            pageResult.isLast()
+        );
+        
+        return ResponseEntity.ok(response);
     }
     
     @GetMapping("/all")

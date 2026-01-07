@@ -1,5 +1,5 @@
 services:
-  mysql-db:
+  mysql-vehicle-db:
     image: mysql:8.0
     container_name: mysql-vehicle-db
     ports:
@@ -8,20 +8,10 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: vehicle_api_db
     volumes:
-      - mysql-data:/var/lib/mysql
+      - ./sql/ddl.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - vehicle-network
 
-  vehicle-api:
-    container_name: omnichain-vehicle-api
-    build: .
-    ports:
-      - "8080:8080"
-    depends_on:
-      - mysql-db
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/vehicle_api_db?useSSL=false&allowPublicKeyRetrieval=true
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: root
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-
-volumes:
-  mysql-data:
+networks:
+  vehicle-network:
+    driver: bridge
