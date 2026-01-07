@@ -1,6 +1,7 @@
 package com.fazpay.vehicle.vehicle.controller;
 
 import com.fazpay.vehicle.core.dto.PageResponse;
+import com.fazpay.vehicle.vehicle.dto.VehiclePatchRequest;
 import com.fazpay.vehicle.vehicle.dto.VehicleRequest;
 import com.fazpay.vehicle.vehicle.dto.VehicleResponse;
 import com.fazpay.vehicle.vehicle.service.VehicleService;
@@ -108,12 +109,13 @@ public class VehicleController {
         return ResponseEntity.status(HttpStatus.CREATED).body(vehicle);
     }
     
-    @PutMapping("/{id}")
-    @Operation(summary = "Update vehicle")
+    @PatchMapping("/{id}")
+    @Operation(summary = "Update vehicle (partial update)",
+               description = "Update one or more vehicle fields. All fields are optional.")
     public ResponseEntity<VehicleResponse> update(@PathVariable UUID id,
-                                                  @Valid @RequestBody VehicleRequest request) {
-        log.info("PUT /api/v1/veiculos/{}", id);
-        VehicleResponse vehicle = vehicleService.update(id, request);
+                                                  @Valid @RequestBody VehiclePatchRequest request) {
+        log.info("PATCH /api/v1/veiculos/{}", id);
+        VehicleResponse vehicle = vehicleService.partialUpdate(id, request);
         return ResponseEntity.ok(vehicle);
     }
     

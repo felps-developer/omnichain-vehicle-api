@@ -1,5 +1,7 @@
 package com.fazpay.vehicle.customer.model;
 
+import com.fazpay.vehicle.core.validation.ValidCpf;
+import com.fazpay.vehicle.core.validation.ValidTelefone;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -34,21 +36,23 @@ public class Customer {
     @Column(name = "id", updatable = false, nullable = false, length = 36)
     private UUID id;
     
-    @NotBlank(message = "Name is required")
-    @Size(min = 3, max = 100, message = "Name must be between 3 and 100 characters")
+    @NotBlank(message = "Nome é obrigatório")
+    @Size(min = 3, max = 100, message = "Nome deve ter entre 3 e 100 caracteres")
     @Column(nullable = false, length = 100)
     private String nome;
     
-    @NotBlank(message = "CPF is required")
+    @NotBlank(message = "CPF é obrigatório")
+    @ValidCpf
     @Column(nullable = false, unique = true, length = 14)
     private String cpf;
     
-    @NotBlank(message = "Email is required")
-    @Email(message = "Invalid email format")
+    @NotBlank(message = "Email é obrigatório")
+    @Email(message = "Email inválido")
     @Column(nullable = false, unique = true, length = 100)
     private String email;
     
-    @NotBlank(message = "Phone is required")
+    @NotBlank(message = "Telefone é obrigatório")
+    @ValidTelefone
     @Column(nullable = false, length = 20)
     private String telefone;
     

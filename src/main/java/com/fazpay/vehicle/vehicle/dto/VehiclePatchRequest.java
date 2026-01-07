@@ -13,30 +13,24 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class VehicleRequest {
+public class VehiclePatchRequest {
     
-    @NotBlank(message = "Placa é obrigatória")
     @ValidPlaca
     private String placa;
     
-    @NotBlank(message = "Marca é obrigatória")
     @Size(min = 2, max = 50, message = "Marca deve ter entre 2 e 50 caracteres")
     private String marca;
     
-    @NotBlank(message = "Modelo é obrigatório")
     @Size(min = 2, max = 50, message = "Modelo deve ter entre 2 e 50 caracteres")
     private String modelo;
     
-    @NotNull(message = "Ano é obrigatório")
     @Min(value = 1900, message = "Ano deve ser maior ou igual a 1900")
     @Max(value = 2100, message = "Ano deve ser menor ou igual a 2100")
     private Integer ano;
     
-    @NotBlank(message = "Cor é obrigatória")
     @Size(min = 3, max = 30, message = "Cor deve ter entre 3 e 30 caracteres")
     private String cor;
     
-    @NotNull(message = "ID do cliente é obrigatório")
     private UUID clienteId;
 }
 

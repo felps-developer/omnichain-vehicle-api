@@ -3,7 +3,6 @@ package com.fazpay.vehicle.customer.dto;
 import com.fazpay.vehicle.core.validation.ValidCpf;
 import com.fazpay.vehicle.core.validation.ValidTelefone;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,21 +13,17 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CustomerRequest {
+public class CustomerPatchRequest {
     
-    @NotBlank(message = "Nome é obrigatório")
     @Size(min = 3, max = 100, message = "Nome deve ter entre 3 e 100 caracteres")
     private String nome;
     
-    @NotBlank(message = "CPF é obrigatório")
     @ValidCpf
     private String cpf;
     
-    @NotBlank(message = "Email é obrigatório")
     @Email(message = "Email inválido")
     private String email;
     
-    @NotBlank(message = "Telefone é obrigatório")
     @ValidTelefone
     private String telefone;
 }

@@ -2,12 +2,15 @@ package com.fazpay.vehicle.customer.service;
 
 import com.fazpay.vehicle.core.exception.BusinessException;
 import com.fazpay.vehicle.core.exception.ResourceNotFoundException;
+import com.fazpay.vehicle.customer.dto.CustomerPatchRequest;
 import com.fazpay.vehicle.customer.dto.CustomerRequest;
 import com.fazpay.vehicle.customer.dto.CustomerResponse;
 import com.fazpay.vehicle.customer.model.Customer;
 import com.fazpay.vehicle.customer.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -81,26 +84,37 @@ public class CustomerService {
     }
     
     @Transactional
-    public CustomerResponse update(UUID id, CustomerRequest request) {
-        log.info("Updating customer with id: {}", id);
+    @CacheEvict(value = "customers", allEntries = true)
+    public CustomerResponse partialUpdate(UUID id, CustomerPatchRequest request) {
+        log.info("Partially updating customer with id: {}", id);
         
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer", "id", id));
         
-        // Check if CPF is being changed and if it already exists
-        if (!customer.getCpf().equals(request.getCpf()) && customerRepository.existsByCpf(request.getCpf())) {
-            throw new BusinessException("Customer with CPF " + request.getCpf() + " already exists");
+        // Update only fields that are not null
+        if (request.getNome() != null) {
+            customer.setNome(request.getNome());
         }
         
-        // Check if email is being changed and if it already exists
-        if (!customer.getEmail().equals(request.getEmail()) && customerRepository.existsByEmail(request.getEmail())) {
-            throw new BusinessException("Customer with email " + request.getEmail() + " already exists");
+        if (request.getCpf() != null) {
+            // Check if CPF is being changed and if it already exists
+            if (!customer.getCpf().equals(request.getCpf()) && customerRepository.existsByCpf(request.getCpf())) {
+                throw new BusinessException("Customer with CPF " + request.getCpf() + " already exists");
+            }
+            customer.setCpf(request.getCpf());
         }
         
-        customer.setNome(request.getNome());
-        customer.setCpf(request.getCpf());
-        customer.setEmail(request.getEmail());
-        customer.setTelefone(request.getTelefone());
+        if (request.getEmail() != null) {
+            // Check if email is being changed and if it already exists
+            if (!customer.getEmail().equals(request.getEmail()) && customerRepository.existsByEmail(request.getEmail())) {
+                throw new BusinessException("Customer with email " + request.getEmail() + " already exists");
+            }
+            customer.setEmail(request.getEmail());
+        }
+        
+        if (request.getTelefone() != null) {
+            customer.setTelefone(request.getTelefone());
+        }
         
         customer = customerRepository.save(customer);
         log.info("Customer updated successfully with id: {}", id);

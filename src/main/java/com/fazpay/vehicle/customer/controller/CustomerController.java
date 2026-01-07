@@ -1,6 +1,7 @@
 package com.fazpay.vehicle.customer.controller;
 
 import com.fazpay.vehicle.core.dto.PageResponse;
+import com.fazpay.vehicle.customer.dto.CustomerPatchRequest;
 import com.fazpay.vehicle.customer.dto.CustomerRequest;
 import com.fazpay.vehicle.customer.dto.CustomerResponse;
 import com.fazpay.vehicle.customer.service.CustomerService;
@@ -99,12 +100,13 @@ public class CustomerController {
         return ResponseEntity.status(HttpStatus.CREATED).body(customer);
     }
     
-    @PutMapping("/{id}")
-    @Operation(summary = "Update customer")
+    @PatchMapping("/{id}")
+    @Operation(summary = "Update customer (partial update)", 
+               description = "Update one or more customer fields. All fields are optional.")
     public ResponseEntity<CustomerResponse> update(@PathVariable UUID id, 
-                                                   @Valid @RequestBody CustomerRequest request) {
-        log.info("PUT /api/v1/clientes/{}", id);
-        CustomerResponse customer = customerService.update(id, request);
+                                                   @Valid @RequestBody CustomerPatchRequest request) {
+        log.info("PATCH /api/v1/clientes/{}", id);
+        CustomerResponse customer = customerService.partialUpdate(id, request);
         return ResponseEntity.ok(customer);
     }
     

@@ -4,6 +4,7 @@ import com.fazpay.vehicle.core.exception.BusinessException;
 import com.fazpay.vehicle.core.exception.ResourceNotFoundException;
 import com.fazpay.vehicle.customer.model.Customer;
 import com.fazpay.vehicle.customer.repository.CustomerRepository;
+import com.fazpay.vehicle.vehicle.dto.VehiclePatchRequest;
 import com.fazpay.vehicle.vehicle.dto.VehicleRequest;
 import com.fazpay.vehicle.vehicle.dto.VehicleResponse;
 import com.fazpay.vehicle.vehicle.model.Vehicle;
@@ -97,26 +98,42 @@ public class VehicleService {
     
     @Transactional
     @CacheEvict(value = "vehicles", allEntries = true)
-    public VehicleResponse update(UUID id, VehicleRequest request) {
-        log.info("Updating vehicle with id: {}", id);
+    public VehicleResponse partialUpdate(UUID id, VehiclePatchRequest request) {
+        log.info("Partially updating vehicle with id: {}", id);
         
         Vehicle vehicle = vehicleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Vehicle", "id", id));
         
-        // Check if plate is being changed and if it already exists
-        if (!vehicle.getPlaca().equals(request.getPlaca()) && vehicleRepository.existsByPlaca(request.getPlaca())) {
-            throw new BusinessException("Vehicle with license plate " + request.getPlaca() + " already exists");
+        // Update only fields that are not null
+        if (request.getPlaca() != null) {
+            // Check if plate is being changed and if it already exists
+            if (!vehicle.getPlaca().equals(request.getPlaca()) && vehicleRepository.existsByPlaca(request.getPlaca())) {
+                throw new BusinessException("Vehicle with license plate " + request.getPlaca() + " already exists");
+            }
+            vehicle.setPlaca(request.getPlaca());
         }
         
-        Customer customer = customerRepository.findById(request.getClienteId())
-                .orElseThrow(() -> new ResourceNotFoundException("Customer", "id", request.getClienteId()));
+        if (request.getMarca() != null) {
+            vehicle.setMarca(request.getMarca());
+        }
         
-        vehicle.setPlaca(request.getPlaca());
-        vehicle.setMarca(request.getMarca());
-        vehicle.setModelo(request.getModelo());
-        vehicle.setAno(request.getAno());
-        vehicle.setCor(request.getCor());
-        vehicle.setCustomer(customer);
+        if (request.getModelo() != null) {
+            vehicle.setModelo(request.getModelo());
+        }
+        
+        if (request.getAno() != null) {
+            vehicle.setAno(request.getAno());
+        }
+        
+        if (request.getCor() != null) {
+            vehicle.setCor(request.getCor());
+        }
+        
+        if (request.getClienteId() != null) {
+            Customer customer = customerRepository.findById(request.getClienteId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Customer", "id", request.getClienteId()));
+            vehicle.setCustomer(customer);
+        }
         
         vehicle = vehicleRepository.save(vehicle);
         log.info("Vehicle updated successfully with id: {}", id);
