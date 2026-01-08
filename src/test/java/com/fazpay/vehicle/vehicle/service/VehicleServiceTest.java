@@ -7,6 +7,7 @@ import com.fazpay.vehicle.customer.repository.CustomerRepository;
 import com.fazpay.vehicle.vehicle.dto.VehiclePatchRequest;
 import com.fazpay.vehicle.vehicle.dto.VehicleRequest;
 import com.fazpay.vehicle.vehicle.dto.VehicleResponse;
+import com.fazpay.vehicle.vehicle.mapper.VehicleMapper;
 import com.fazpay.vehicle.vehicle.model.Vehicle;
 import com.fazpay.vehicle.vehicle.repository.VehicleRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,13 +41,17 @@ class VehicleServiceTest {
     @Mock
     private CustomerRepository customerRepository;
 
+    @Mock
+    private VehicleMapper vehicleMapper;
+
     @InjectMocks
-    private VehicleService vehicleService;
+    private VehicleServiceImpl vehicleService;
 
     private Vehicle vehicle;
     private Customer customer;
     private VehicleRequest vehicleRequest;
     private VehiclePatchRequest vehiclePatchRequest;
+    private VehicleResponse vehicleResponse;
     private UUID vehicleId;
     private UUID customerId;
 
@@ -85,6 +90,17 @@ class VehicleServiceTest {
         vehiclePatchRequest = VehiclePatchRequest.builder()
                 .cor("Azul")
                 .build();
+
+        vehicleResponse = VehicleResponse.builder()
+                .id(vehicleId)
+                .placa("ABC1234")
+                .marca("Toyota")
+                .modelo("Corolla")
+                .ano(2023)
+                .cor("Prata")
+                .clienteId(customerId)
+                .clienteNome("João Silva")
+                .build();
     }
 
     @Test
@@ -96,6 +112,7 @@ class VehicleServiceTest {
         Page<Vehicle> vehiclePage = new PageImpl<>(vehicles, pageable, 1);
         
         when(vehicleRepository.findWithFilters(null, null, null, pageable)).thenReturn(vehiclePage);
+        when(vehicleMapper.toResponse(any(Vehicle.class))).thenReturn(vehicleResponse);
 
         // When
         Page<VehicleResponse> result = vehicleService.findWithFilters(null, null, null, pageable);
@@ -105,6 +122,7 @@ class VehicleServiceTest {
         assertThat(result.getContent()).hasSize(1);
         assertThat(result.getContent().get(0).getPlaca()).isEqualTo("ABC1234");
         verify(vehicleRepository).findWithFilters(null, null, null, pageable);
+        verify(vehicleMapper).toResponse(any(Vehicle.class));
     }
 
     @Test
@@ -112,6 +130,7 @@ class VehicleServiceTest {
     void shouldFindVehicleById() {
         // Given
         when(vehicleRepository.findById(vehicleId)).thenReturn(Optional.of(vehicle));
+        when(vehicleMapper.toResponse(vehicle)).thenReturn(vehicleResponse);
 
         // When
         VehicleResponse result = vehicleService.findById(vehicleId);
@@ -121,6 +140,7 @@ class VehicleServiceTest {
         assertThat(result.getId()).isEqualTo(vehicleId);
         assertThat(result.getPlaca()).isEqualTo("ABC1234");
         verify(vehicleRepository).findById(vehicleId);
+        verify(vehicleMapper).toResponse(vehicle);
     }
 
     @Test
@@ -143,6 +163,7 @@ class VehicleServiceTest {
     void shouldFindVehicleByPlate() {
         // Given
         when(vehicleRepository.findByPlaca("ABC1234")).thenReturn(Optional.of(vehicle));
+        when(vehicleMapper.toResponse(vehicle)).thenReturn(vehicleResponse);
 
         // When
         VehicleResponse result = vehicleService.findByPlaca("ABC1234");
@@ -151,6 +172,7 @@ class VehicleServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getPlaca()).isEqualTo("ABC1234");
         verify(vehicleRepository).findByPlaca("ABC1234");
+        verify(vehicleMapper).toResponse(vehicle);
     }
 
     @Test
@@ -172,9 +194,11 @@ class VehicleServiceTest {
     @DisplayName("Should create new vehicle")
     void shouldCreateNewVehicle() {
         // Given
-        when(vehicleRepository.existsByPlaca(vehicleRequest.getPlaca())).thenReturn(false);
+        when(vehicleRepository.findByPlaca(vehicleRequest.getPlaca())).thenReturn(Optional.empty());
         when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
+        when(vehicleMapper.toEntity(vehicleRequest)).thenReturn(vehicle);
         when(vehicleRepository.save(any(Vehicle.class))).thenReturn(vehicle);
+        when(vehicleMapper.toResponse(vehicle)).thenReturn(vehicleResponse);
 
         // When
         VehicleResponse result = vehicleService.create(vehicleRequest);
@@ -183,7 +207,6 @@ class VehicleServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getPlaca()).isEqualTo("ABC1234");
         assertThat(result.getMarca()).isEqualTo("Toyota");
-        verify(vehicleRepository).existsByPlaca(vehicleRequest.getPlaca());
         verify(customerRepository).findById(customerId);
         verify(vehicleRepository).save(any(Vehicle.class));
     }
@@ -192,14 +215,14 @@ class VehicleServiceTest {
     @DisplayName("Should throw BusinessException when plate already exists")
     void shouldThrowExceptionWhenPlateAlreadyExists() {
         // Given
-        when(vehicleRepository.existsByPlaca(vehicleRequest.getPlaca())).thenReturn(true);
+        when(vehicleRepository.findByPlaca(vehicleRequest.getPlaca())).thenReturn(Optional.of(vehicle));
 
         // When & Then
         assertThatThrownBy(() -> vehicleService.create(vehicleRequest))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("license plate");
         
-        verify(vehicleRepository).existsByPlaca(vehicleRequest.getPlaca());
+        verify(vehicleRepository).findByPlaca(vehicleRequest.getPlaca());
         verify(vehicleRepository, never()).save(any());
     }
 
@@ -207,7 +230,7 @@ class VehicleServiceTest {
     @DisplayName("Should throw ResourceNotFoundException when customer not found")
     void shouldThrowExceptionWhenCustomerNotFound() {
         // Given
-        when(vehicleRepository.existsByPlaca(vehicleRequest.getPlaca())).thenReturn(false);
+        when(vehicleRepository.findByPlaca(vehicleRequest.getPlaca())).thenReturn(Optional.empty());
         when(customerRepository.findById(customerId)).thenReturn(Optional.empty());
 
         // When & Then
@@ -215,7 +238,6 @@ class VehicleServiceTest {
                 .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining("Customer");
         
-        verify(vehicleRepository).existsByPlaca(vehicleRequest.getPlaca());
         verify(customerRepository).findById(customerId);
         verify(vehicleRepository, never()).save(any());
     }
@@ -226,6 +248,7 @@ class VehicleServiceTest {
         // Given
         when(vehicleRepository.findById(vehicleId)).thenReturn(Optional.of(vehicle));
         when(vehicleRepository.save(any(Vehicle.class))).thenReturn(vehicle);
+        when(vehicleMapper.toResponse(vehicle)).thenReturn(vehicleResponse);
 
         // When
         VehicleResponse result = vehicleService.partialUpdate(vehicleId, vehiclePatchRequest);
@@ -246,6 +269,7 @@ class VehicleServiceTest {
         
         when(vehicleRepository.findById(vehicleId)).thenReturn(Optional.of(vehicle));
         when(vehicleRepository.save(any(Vehicle.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(vehicleMapper.toResponse(any(Vehicle.class))).thenReturn(vehicleResponse);
 
         // When
         vehicleService.partialUpdate(vehicleId, patchRequest);
@@ -289,6 +313,7 @@ class VehicleServiceTest {
         // Given
         List<Vehicle> vehicles = Arrays.asList(vehicle);
         when(vehicleRepository.findAllByDeletedAtIsNull()).thenReturn(vehicles);
+        when(vehicleMapper.toResponse(any(Vehicle.class))).thenReturn(vehicleResponse);
 
         // When
         List<VehicleResponse> result = vehicleService.findAll();
@@ -300,4 +325,3 @@ class VehicleServiceTest {
         verify(vehicleRepository).findAllByDeletedAtIsNull();
     }
 }
-

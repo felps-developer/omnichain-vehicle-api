@@ -4,7 +4,7 @@ import com.fazpay.vehicle.core.dto.PageResponse;
 import com.fazpay.vehicle.customer.dto.CustomerPatchRequest;
 import com.fazpay.vehicle.customer.dto.CustomerRequest;
 import com.fazpay.vehicle.customer.dto.CustomerResponse;
-import com.fazpay.vehicle.customer.service.CustomerService;
+import com.fazpay.vehicle.customer.service.ICustomerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,6 +23,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * REST Controller for Customer operations.
+ * Following REST best practices and separation of concerns.
+ */
 @RestController
 @RequestMapping("/api/v1/clientes")
 @RequiredArgsConstructor
@@ -30,7 +34,7 @@ import java.util.UUID;
 @Tag(name = "Customers", description = "Customer management endpoints")
 public class CustomerController {
     
-    private final CustomerService customerService;
+    private final ICustomerService customerService;
     
     @GetMapping
     @Operation(

@@ -5,6 +5,7 @@ import com.fazpay.vehicle.core.exception.ResourceNotFoundException;
 import com.fazpay.vehicle.customer.dto.CustomerPatchRequest;
 import com.fazpay.vehicle.customer.dto.CustomerRequest;
 import com.fazpay.vehicle.customer.dto.CustomerResponse;
+import com.fazpay.vehicle.customer.mapper.CustomerMapper;
 import com.fazpay.vehicle.customer.model.Customer;
 import com.fazpay.vehicle.customer.repository.CustomerRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,13 +36,18 @@ class CustomerServiceTest {
     @Mock
     private CustomerRepository customerRepository;
 
+    @Mock
+    private CustomerMapper customerMapper;
+
     @InjectMocks
-    private CustomerService customerService;
+    private CustomerServiceImpl customerService;
 
     private Customer customer;
     private CustomerRequest customerRequest;
     private CustomerPatchRequest customerPatchRequest;
     private UUID customerId;
+
+    private CustomerResponse customerResponse;
 
     @BeforeEach
     void setUp() {
@@ -65,6 +71,14 @@ class CustomerServiceTest {
         customerPatchRequest = CustomerPatchRequest.builder()
                 .nome("João Silva Atualizado")
                 .build();
+
+        customerResponse = CustomerResponse.builder()
+                .id(customerId)
+                .nome("João Silva")
+                .cpf("12345678909")
+                .email("joao@example.com")
+                .telefone("(11) 98765-4321")
+                .build();
     }
 
     @Test
@@ -76,6 +90,7 @@ class CustomerServiceTest {
         Page<Customer> customerPage = new PageImpl<>(customers, pageable, 1);
         
         when(customerRepository.findWithFilters(null, null, pageable)).thenReturn(customerPage);
+        when(customerMapper.toResponse(any(Customer.class))).thenReturn(customerResponse);
 
         // When
         Page<CustomerResponse> result = customerService.findWithFilters(null, null, pageable);
@@ -85,6 +100,7 @@ class CustomerServiceTest {
         assertThat(result.getContent()).hasSize(1);
         assertThat(result.getContent().get(0).getNome()).isEqualTo("João Silva");
         verify(customerRepository).findWithFilters(null, null, pageable);
+        verify(customerMapper).toResponse(any(Customer.class));
     }
 
     @Test
@@ -92,6 +108,7 @@ class CustomerServiceTest {
     void shouldFindCustomerById() {
         // Given
         when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
+        when(customerMapper.toResponse(customer)).thenReturn(customerResponse);
 
         // When
         CustomerResponse result = customerService.findById(customerId);
@@ -101,6 +118,7 @@ class CustomerServiceTest {
         assertThat(result.getId()).isEqualTo(customerId);
         assertThat(result.getNome()).isEqualTo("João Silva");
         verify(customerRepository).findById(customerId);
+        verify(customerMapper).toResponse(customer);
     }
 
     @Test
@@ -122,9 +140,11 @@ class CustomerServiceTest {
     @DisplayName("Should create new customer")
     void shouldCreateNewCustomer() {
         // Given
-        when(customerRepository.existsByCpf(customerRequest.getCpf())).thenReturn(false);
-        when(customerRepository.existsByEmail(customerRequest.getEmail())).thenReturn(false);
+        when(customerRepository.findByCpf(customerRequest.getCpf())).thenReturn(Optional.empty());
+        when(customerRepository.findByEmail(customerRequest.getEmail())).thenReturn(Optional.empty());
+        when(customerMapper.toEntity(customerRequest)).thenReturn(customer);
         when(customerRepository.save(any(Customer.class))).thenReturn(customer);
+        when(customerMapper.toResponse(customer)).thenReturn(customerResponse);
 
         // When
         CustomerResponse result = customerService.create(customerRequest);
@@ -133,23 +153,23 @@ class CustomerServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getNome()).isEqualTo("João Silva");
         assertThat(result.getCpf()).isEqualTo("12345678909");
-        verify(customerRepository).existsByCpf(customerRequest.getCpf());
-        verify(customerRepository).existsByEmail(customerRequest.getEmail());
+        verify(customerMapper).toEntity(customerRequest);
         verify(customerRepository).save(any(Customer.class));
+        verify(customerMapper).toResponse(customer);
     }
 
     @Test
     @DisplayName("Should throw BusinessException when CPF already exists")
     void shouldThrowExceptionWhenCpfAlreadyExists() {
         // Given
-        when(customerRepository.existsByCpf(customerRequest.getCpf())).thenReturn(true);
+        when(customerRepository.findByCpf(customerRequest.getCpf())).thenReturn(Optional.of(customer));
 
         // When & Then
         assertThatThrownBy(() -> customerService.create(customerRequest))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("CPF");
         
-        verify(customerRepository).existsByCpf(customerRequest.getCpf());
+        verify(customerRepository).findByCpf(customerRequest.getCpf());
         verify(customerRepository, never()).save(any());
     }
 
@@ -157,16 +177,16 @@ class CustomerServiceTest {
     @DisplayName("Should throw BusinessException when email already exists")
     void shouldThrowExceptionWhenEmailAlreadyExists() {
         // Given
-        when(customerRepository.existsByCpf(customerRequest.getCpf())).thenReturn(false);
-        when(customerRepository.existsByEmail(customerRequest.getEmail())).thenReturn(true);
+        when(customerRepository.findByCpf(customerRequest.getCpf())).thenReturn(Optional.empty());
+        when(customerRepository.findByEmail(customerRequest.getEmail())).thenReturn(Optional.of(customer));
 
         // When & Then
         assertThatThrownBy(() -> customerService.create(customerRequest))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("email");
         
-        verify(customerRepository).existsByCpf(customerRequest.getCpf());
-        verify(customerRepository).existsByEmail(customerRequest.getEmail());
+        verify(customerRepository).findByCpf(customerRequest.getCpf());
+        verify(customerRepository).findByEmail(customerRequest.getEmail());
         verify(customerRepository, never()).save(any());
     }
 
@@ -176,6 +196,7 @@ class CustomerServiceTest {
         // Given
         when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
         when(customerRepository.save(any(Customer.class))).thenReturn(customer);
+        when(customerMapper.toResponse(customer)).thenReturn(customerResponse);
 
         // When
         CustomerResponse result = customerService.partialUpdate(customerId, customerPatchRequest);
@@ -184,6 +205,7 @@ class CustomerServiceTest {
         assertThat(result).isNotNull();
         verify(customerRepository).findById(customerId);
         verify(customerRepository).save(any(Customer.class));
+        verify(customerMapper).toResponse(customer);
     }
 
     @Test
@@ -239,6 +261,7 @@ class CustomerServiceTest {
         // Given
         List<Customer> customers = Arrays.asList(customer);
         when(customerRepository.findAllByDeletedAtIsNull()).thenReturn(customers);
+        when(customerMapper.toResponse(any(Customer.class))).thenReturn(customerResponse);
 
         // When
         List<CustomerResponse> result = customerService.findAll();
@@ -248,6 +271,7 @@ class CustomerServiceTest {
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getNome()).isEqualTo("João Silva");
         verify(customerRepository).findAllByDeletedAtIsNull();
+        verify(customerMapper).toResponse(any(Customer.class));
     }
 }
 

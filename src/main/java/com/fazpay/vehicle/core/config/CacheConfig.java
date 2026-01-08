@@ -15,8 +15,10 @@ public class CacheConfig {
     
     @Bean
     public CacheManager cacheManager() {
-        CaffeineCacheManager cacheManager = new CaffeineCacheManager("vehicles");
+        CaffeineCacheManager cacheManager = new CaffeineCacheManager("vehicles", "customers", "users");
         cacheManager.setCaffeine(caffeineCacheBuilder());
+        // Permite criação dinâmica de caches não declarados
+        cacheManager.setAllowNullValues(false);
         return cacheManager;
     }
     

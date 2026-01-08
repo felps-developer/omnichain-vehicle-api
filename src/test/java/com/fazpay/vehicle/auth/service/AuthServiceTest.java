@@ -4,6 +4,7 @@ import com.fazpay.vehicle.auth.dto.LoginRequest;
 import com.fazpay.vehicle.auth.dto.LoginResponse;
 import com.fazpay.vehicle.auth.dto.RegisterRequest;
 import com.fazpay.vehicle.core.exception.BusinessException;
+import com.fazpay.vehicle.core.exception.ResourceNotFoundException;
 import com.fazpay.vehicle.core.security.JwtTokenProvider;
 import com.fazpay.vehicle.user.model.User;
 import com.fazpay.vehicle.user.repository.UserRepository;
@@ -48,7 +49,7 @@ class AuthServiceTest {
     private Authentication authentication;
 
     @InjectMocks
-    private AuthService authService;
+    private AuthServiceImpl authService;
 
     private User user;
     private LoginRequest loginRequest;
@@ -168,7 +169,7 @@ class AuthServiceTest {
     }
 
     @Test
-    @DisplayName("Should throw RuntimeException when current user not found")
+    @DisplayName("Should throw ResourceNotFoundException when current user not found")
     void shouldThrowExceptionWhenCurrentUserNotFound() {
         // Given
         String username = "nonexistent";
@@ -176,10 +177,9 @@ class AuthServiceTest {
 
         // When & Then
         assertThatThrownBy(() -> authService.getCurrentUser(username))
-                .isInstanceOf(RuntimeException.class)
+                .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining("User not found");
         
         verify(userRepository).findByUsername(username);
     }
 }
-

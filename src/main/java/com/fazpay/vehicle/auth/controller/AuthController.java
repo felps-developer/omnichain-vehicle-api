@@ -4,7 +4,7 @@ import com.fazpay.vehicle.auth.dto.LoginRequest;
 import com.fazpay.vehicle.auth.dto.LoginResponse;
 import com.fazpay.vehicle.auth.dto.RegisterRequest;
 import com.fazpay.vehicle.auth.dto.UserInfoResponse;
-import com.fazpay.vehicle.auth.service.AuthService;
+import com.fazpay.vehicle.auth.service.IAuthService;
 import com.fazpay.vehicle.user.model.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -16,6 +16,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * REST Controller for Authentication operations.
+ * Following REST best practices and separation of concerns.
+ */
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
@@ -23,7 +27,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Authentication", description = "Authentication endpoints")
 public class AuthController {
     
-    private final AuthService authService;
+    private final IAuthService authService;
     
     @PostMapping("/login")
     @Operation(summary = "Authenticate user", description = "Authenticates a user and returns a JWT token")

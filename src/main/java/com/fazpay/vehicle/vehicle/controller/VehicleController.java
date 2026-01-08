@@ -4,7 +4,7 @@ import com.fazpay.vehicle.core.dto.PageResponse;
 import com.fazpay.vehicle.vehicle.dto.VehiclePatchRequest;
 import com.fazpay.vehicle.vehicle.dto.VehicleRequest;
 import com.fazpay.vehicle.vehicle.dto.VehicleResponse;
-import com.fazpay.vehicle.vehicle.service.VehicleService;
+import com.fazpay.vehicle.vehicle.service.IVehicleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,6 +21,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * REST Controller for Vehicle operations.
+ * Following REST best practices and separation of concerns.
+ */
 @RestController
 @RequestMapping("/api/v1/veiculos")
 @RequiredArgsConstructor
@@ -28,7 +32,7 @@ import java.util.UUID;
 @Tag(name = "Vehicles", description = "Vehicle management endpoints")
 public class VehicleController {
     
-    private final VehicleService vehicleService;
+    private final IVehicleService vehicleService;
     
     @GetMapping
     @Operation(
