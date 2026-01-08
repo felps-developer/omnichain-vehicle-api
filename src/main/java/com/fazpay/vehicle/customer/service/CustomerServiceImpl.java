@@ -24,10 +24,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * Implementation of Customer service operations.
- * Following SOLID principles and Clean Code practices.
- */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -118,19 +114,13 @@ public class CustomerServiceImpl implements ICustomerService {
         log.info("Customer soft deleted successfully with id: {}", id);
     }
     
-    // ==================== Private Helper Methods ====================
+    // Métodos auxiliares privados
     
-    /**
-     * Finds a customer by ID or throws ResourceNotFoundException.
-     */
     private Customer findCustomerByIdOrThrow(UUID id) {
         return customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer", "id", id));
     }
     
-    /**
-     * Validates if CPF is unique (excluding the given customer ID).
-     */
     private void validateCpfUniqueness(String cpf, UUID excludeId) {
         if (cpf == null) {
             return;
@@ -143,9 +133,6 @@ public class CustomerServiceImpl implements ICustomerService {
         });
     }
     
-    /**
-     * Validates if email is unique (excluding the given customer ID).
-     */
     private void validateEmailUniqueness(String email, UUID excludeId) {
         if (email == null) {
             return;
@@ -158,9 +145,6 @@ public class CustomerServiceImpl implements ICustomerService {
         });
     }
     
-    /**
-     * Validates that at least one field is provided in PATCH request.
-     */
     private void validatePatchRequestNotEmpty(CustomerPatchRequest request) {
         if (request.getNome() == null && 
             request.getCpf() == null && 
@@ -170,9 +154,6 @@ public class CustomerServiceImpl implements ICustomerService {
         }
     }
     
-    /**
-     * Updates customer fields from PATCH request.
-     */
     private void updateCustomerFields(Customer customer, CustomerPatchRequest request, UUID customerId) {
         if (request.getNome() != null) {
             customer.setNome(request.getNome());

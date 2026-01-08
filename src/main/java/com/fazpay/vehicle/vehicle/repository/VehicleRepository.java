@@ -23,10 +23,7 @@ public interface VehicleRepository extends JpaRepository<Vehicle, UUID>, JpaSpec
     
     boolean existsByPlaca(String placa);
     
-    /**
-     * Finds all vehicles with customer eagerly loaded to avoid N+1 query problem.
-     * Using @EntityGraph to fetch the customer association in a single query.
-     */
+    // Busca com join fetch para evitar N+1 queries
     @EntityGraph(attributePaths = {"customer"})
     @Query("SELECT v FROM Vehicle v WHERE v.deletedAt IS NULL")
     Page<Vehicle> findAllWithCustomer(Pageable pageable);

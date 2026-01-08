@@ -1,8 +1,5 @@
 package com.fazpay.vehicle.core.constants;
 
-/**
- * Centralized cache names for better maintainability.
- */
 public final class CacheNames {
     
     private CacheNames() {

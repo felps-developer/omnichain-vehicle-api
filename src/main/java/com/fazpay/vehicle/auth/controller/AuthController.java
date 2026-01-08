@@ -16,10 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-/**
- * REST Controller for Authentication operations.
- * Following REST best practices and separation of concerns.
- */
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor

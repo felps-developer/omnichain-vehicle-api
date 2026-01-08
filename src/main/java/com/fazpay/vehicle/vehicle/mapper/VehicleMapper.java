@@ -5,19 +5,9 @@ import com.fazpay.vehicle.vehicle.dto.VehicleResponse;
 import com.fazpay.vehicle.vehicle.model.Vehicle;
 import org.springframework.stereotype.Component;
 
-/**
- * Mapper for Vehicle entity and DTOs.
- * Following Single Responsibility Principle - dedicated class for mapping logic.
- */
 @Component
 public class VehicleMapper {
     
-    /**
-     * Maps Vehicle entity to VehicleResponse DTO.
-     *
-     * @param vehicle the vehicle entity
-     * @return the vehicle response DTO
-     */
     public VehicleResponse toResponse(Vehicle vehicle) {
         if (vehicle == null) {
             return null;
@@ -37,12 +27,6 @@ public class VehicleMapper {
                 .build();
     }
     
-    /**
-     * Maps VehicleRequest DTO to Vehicle entity (without customer).
-     *
-     * @param request the vehicle request DTO
-     * @return the vehicle entity (customer needs to be set separately)
-     */
     public Vehicle toEntity(VehicleRequest request) {
         if (request == null) {
             return null;

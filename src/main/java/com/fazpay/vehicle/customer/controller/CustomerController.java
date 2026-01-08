@@ -23,10 +23,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * REST Controller for Customer operations.
- * Following REST best practices and separation of concerns.
- */
 @RestController
 @RequestMapping("/api/v1/clientes")
 @RequiredArgsConstructor

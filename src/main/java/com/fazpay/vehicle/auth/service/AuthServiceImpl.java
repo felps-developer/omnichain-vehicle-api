@@ -19,10 +19,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Implementation of Authentication service operations.
- * Following SOLID principles and Clean Code practices.
- */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -80,11 +76,8 @@ public class AuthServiceImpl implements IAuthService {
                 .orElseThrow(() -> new ResourceNotFoundException("User", "username", username));
     }
     
-    // ==================== Private Helper Methods ====================
+    // Métodos auxiliares privados
     
-    /**
-     * Validates if username is unique.
-     */
     private void validateUsernameUniqueness(String username) {
         if (userRepository.existsByUsername(username)) {
             log.error("Username already exists: {}", username);
@@ -92,9 +85,6 @@ public class AuthServiceImpl implements IAuthService {
         }
     }
     
-    /**
-     * Validates if email is unique.
-     */
     private void validateEmailUniqueness(String email) {
         if (userRepository.existsByEmail(email)) {
             log.error("Email already exists: {}", email);

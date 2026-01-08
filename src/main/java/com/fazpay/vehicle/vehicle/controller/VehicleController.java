@@ -21,10 +21,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * REST Controller for Vehicle operations.
- * Following REST best practices and separation of concerns.
- */
 @RestController
 @RequestMapping("/api/v1/veiculos")
 @RequiredArgsConstructor

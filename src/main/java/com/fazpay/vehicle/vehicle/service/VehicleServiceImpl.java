@@ -25,10 +25,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * Implementation of Vehicle service operations.
- * Following SOLID principles and Clean Code practices.
- */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -133,27 +129,18 @@ public class VehicleServiceImpl implements IVehicleService {
         log.info("Vehicle soft deleted successfully with id: {}", id);
     }
     
-    // ==================== Private Helper Methods ====================
+    // Métodos auxiliares privados
     
-    /**
-     * Finds a vehicle by ID or throws ResourceNotFoundException.
-     */
     private Vehicle findVehicleByIdOrThrow(UUID id) {
         return vehicleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Vehicle", "id", id));
     }
     
-    /**
-     * Finds a customer by ID or throws ResourceNotFoundException.
-     */
     private Customer findCustomerByIdOrThrow(UUID id) {
         return customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer", "id", id));
     }
     
-    /**
-     * Validates if license plate is unique (excluding the given vehicle ID).
-     */
     private void validatePlacaUniqueness(String placa, UUID excludeId) {
         if (placa == null) {
             return;
@@ -166,9 +153,6 @@ public class VehicleServiceImpl implements IVehicleService {
         });
     }
     
-    /**
-     * Validates that at least one field is provided in PATCH request.
-     */
     private void validatePatchRequestNotEmpty(VehiclePatchRequest request) {
         if (request.getPlaca() == null && 
             request.getMarca() == null && 
@@ -180,9 +164,6 @@ public class VehicleServiceImpl implements IVehicleService {
         }
     }
     
-    /**
-     * Updates vehicle fields from PATCH request.
-     */
     private void updateVehicleFields(Vehicle vehicle, VehiclePatchRequest request, UUID vehicleId) {
         if (request.getPlaca() != null) {
             validatePlacaUniqueness(request.getPlaca(), vehicleId);
